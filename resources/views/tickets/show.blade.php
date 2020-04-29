@@ -3,6 +3,15 @@
 @section('content')
     <h1>
         {{ $ticket->subject }}
+        @if (!$ticket->is_closed)
+            <button onclick="document.getElementById('close').submit()" type="button" class="btn btn-primary btn-sm">
+                Закрыть заявку
+            </button>
+
+            <form id="close" action="{{ route('tickets.close', $ticket) }}" method="post">
+                @csrf
+            </form>
+        @endif
     </h1>
 
     @foreach ($ticket->messages as $message)

@@ -4,7 +4,7 @@ namespace App\Http\Requests\Ticket;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class RespondRequest extends FormRequest
+class CloseRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,16 +24,7 @@ class RespondRequest extends FormRequest
     public function rules()
     {
         return [
-            'message' => [
-                'required',
-                'string',
-                'max:25000'
-            ],
-            'attachment' => [
-                'nullable',
-                'file',
-                'max:2500'
-            ]
+            //
         ];
     }
 }

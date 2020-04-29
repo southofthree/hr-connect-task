@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Requests\Ticket\StoreRequest;
 use App\Http\Requests\Ticket\RespondRequest;
+use App\Http\Requests\Ticket\CloseRequest;
 use App\Services\TicketService;
 use App\Ticket;
 use Exception;
@@ -18,15 +19,7 @@ class TicketController extends Controller
         if ($user->isManager()) {
             return view('manager.tickets.index');
         } else {
-            $tickets = $user->ticketsAsClient()
-                            ->selectRaw("
-                                id,
-                                subject,
-                                is_closed,
-                                (select text from messages where ticket_id = tickets.id order by created_at asc limit 1) message
-                            ")
-                            ->orderBy('updated_at', 'desc')
-                            ->get();
+            $tickets = TicketService::getClientTickets($user);
 
             return view('tickets.index', compact('tickets'));
         }
@@ -59,7 +52,7 @@ class TicketController extends Controller
 
             return redirect()->route('home');
         } catch (Exception $e) {
-            return back();
+            return back()->withErrors(['error' => $e->getMessage()])->withInput($request->all());
         }
     }
 
@@ -70,7 +63,14 @@ class TicketController extends Controller
 
             return back();
         } catch (Exception $e) {
-            return back();
+            return back()->withErrors(['error' => $e->getMessage()])->withInput($request->all());
         }
+    }
+
+    public function close(CloseRequest $request, Ticket $ticket)
+    {
+        $ticket->close();
+
+        return back();
     }
 }

@@ -6,6 +6,7 @@ use DB;
 use Exception;
 use App\User;
 use App\Ticket;
+use Illuminate\Database\Eloquent\Collection;
 
 class TicketService
 {
@@ -51,11 +52,26 @@ class TicketService
                 $message->attachments()->create(['filename' => $filename]);
             }
 
+            $ticket->touch();
+
             DB::commit();
         } catch (Exception $e) {
             DB::rollback();
 
             throw $e;
         }
+    }
+
+    public static function getClientTickets(User $user): Collection
+    {
+        return $user->ticketsAsClient()
+            ->selectRaw("
+                id,
+                subject,
+                is_closed,
+                (select text from messages where ticket_id = tickets.id order by created_at asc limit 1) message
+            ")
+            ->orderBy('updated_at', 'desc')
+            ->get();
     }
 }

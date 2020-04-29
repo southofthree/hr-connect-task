@@ -12,6 +12,18 @@ class Ticket extends Model
         'is_closed'
     ];
 
+    public function close()
+    {
+        $this->is_closed = true;
+
+        $this->save();
+    }
+
+    public function belongsToUser(int $userId): bool
+    {
+        return $userId === $this->client_id || $userId === $this->manager_id;
+    }
+
     public function messages()
     {
         return $this->hasMany('App\Message');
