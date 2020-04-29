@@ -24,6 +24,6 @@ class User extends Authenticatable
 
     public function ticketsAsClient()
     {
-        return $this->hasMany('App\Ticket', 'client');
+        return $this->hasMany('App\Ticket', 'client_id');
     }
 }

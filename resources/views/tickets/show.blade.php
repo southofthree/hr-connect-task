@@ -1,31 +1,52 @@
 @extends('layouts.app')
 
 @section('content')
-    @can('create', App\Ticket::class)
-        <div class="card">
+    <h1>
+        {{ $ticket->subject }}
+    </h1>
+
+    @foreach ($ticket->messages as $message)
+        <div class="card card--message {{ $message->is_from_manager ? 'card--response' : '' }}">
             <div class="card-header">
-                Новая заявка
+                @if ($message->is_from_manager)
+                    {{ $ticket->manager->name }}, {{ $message->created_at }}
+                @else
+                    Вы, {{ $message->created_at }}
+                @endif
             </div>
 
             <div class="card-body">
-                <form method="POST" enctype="multipart/form-data" action="{{ route('tickets.store') }}">
+                {!! nl2br($message->text) !!}
+
+                @if ($message->attachments->count())
+                    <br><br>
+                    <strong>
+                        Прикрепленные файлы:
+                    </strong>
+
+                    @foreach ($message->attachments as $index => $attachment)
+                        <br>
+                        <a href="{{ Storage::disk('public')->url($attachment->filename) }}" download>
+                            {{ $attachment->filename }}
+                        </a>
+                    @endforeach
+                @endif
+            </div>
+        </div>
+    @endforeach
+
+    @if ($ticket->is_closed)
+        <div class="alert alert-info">
+            Заявка закрыта
+        </div>
+    @elseif ($ticket->messages->last()->is_from_manager)
+        <div class="card">
+            <div class="card-header">
+                Ответить
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data" action="{{ route('tickets.respond', $ticket) }}">
                     @csrf
-
-                    <div class="form-group row">
-                        <label for="subject" class="col-md-4 col-form-label text-md-right">
-                            Тема
-                        </label>
-
-                        <div class="col-md-6">
-                            <input id="subject" type="text" class="form-control @error('subject') is-invalid @enderror" name="subject" value="{{ old('subject') }}" required autofocus>
-
-                            @error('subject')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
-                        </div>
-                    </div>
 
                     <div class="form-group row">
                         <label for="message" class="col-md-4 col-form-label text-md-right">
@@ -69,9 +90,5 @@
                 </form>
             </div>
         </div>
-    @else
-        <div class="alert alert-warning">
-            Извините, новую заявку можно оставлять не чаще, чем раз в сутки :(
-        </div>
-    @endcan
+    @endif
 @endsection

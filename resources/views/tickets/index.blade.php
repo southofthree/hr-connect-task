@@ -23,11 +23,16 @@
                 <tr>
                     <th>
                         <strong>
-                            {{ $ticket->subject }}
+                            <a href="{{ route('tickets.show', $ticket) }}">
+                                {{ $ticket->subject }}
+                            </a>
+                            <p>
+                                {{ $ticket->message }}
+                            </p>
                         </strong>
                     </th>
                     <td>
-                        {{ $ticket->is_closed ? 'Закрыта' : 'Открыта' }}
+                        {!! $ticket->is_closed ? '✔ Закрыта' : '<span style="color: green">Открыта</span>' !!}
                     </td>
                 </tr>
             @endforeach

@@ -21,7 +21,12 @@ Route::middleware('auth')->group(function() {
     Route::middleware('client')->group(function() {
         Route::prefix('tickets')->group(function() {
             Route::get('add', 'TicketController@add')->name('tickets.add');
-            Route::post('', 'TicketController@store')->name('tickets.store');
+            Route::middleware('can:create,App\Ticket')->post('', 'TicketController@store')->name('tickets.store');
         });
+    });
+
+    Route::prefix('tickets')->group(function() {
+        Route::get('{ticket}', 'TicketController@show')->name('tickets.show');
+        Route::middleware('can:respond,ticket')->post('{ticket}', 'TicketController@respond')->name('tickets.respond');
     });
 });

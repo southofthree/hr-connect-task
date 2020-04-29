@@ -16,11 +16,11 @@ class CreateTicketsTable extends Migration
         Schema::create('tickets', function (Blueprint $table) {
             $table->id();
             $table->string('subject');
-            $table->unsignedBigInteger('client');
-            $table->unsignedBigInteger('manager')->nullable();
+            $table->unsignedBigInteger('client_id');
+            $table->unsignedBigInteger('manager_id')->nullable();
             $table->boolean('is_closed')->default(false);
-            $table->foreign('client')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('manager')->references('id')->on('users');
+            $table->foreign('client_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('manager_id')->references('id')->on('users');
             $table->timestamps();
         });
     }

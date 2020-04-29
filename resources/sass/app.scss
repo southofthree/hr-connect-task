@@ -6,3 +6,19 @@
 
 // Bootstrap
 @import '~bootstrap/scss/bootstrap';
+
+.card {
+    &--message {
+        margin-right: 60px;
+        margin-bottom: 15px;
+    }
+
+    &--response {
+        margin-left: 60px;
+        margin-right: 0;
+
+        .card-body {
+            background: #DCEDC8;
+        }
+    }
+}
