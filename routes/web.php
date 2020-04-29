@@ -13,10 +13,15 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
-
 Auth::routes();
 
-Route::get('/home', 'HomeController@index')->name('home');
+Route::middleware('auth')->group(function() {
+    Route::get('', 'TicketController@index')->name('home');
+
+    Route::middleware('client')->group(function() {
+        Route::prefix('tickets')->group(function() {
+            Route::get('add', 'TicketController@add')->name('tickets.add');
+            Route::post('', 'TicketController@store')->name('tickets.store');
+        });
+    });
+});

@@ -15,10 +15,11 @@ class CreateTicketsTable extends Migration
     {
         Schema::create('tickets', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('author');
-            $table->unsignedBigInteger('manager');
+            $table->string('subject');
+            $table->unsignedBigInteger('client');
+            $table->unsignedBigInteger('manager')->nullable();
             $table->boolean('is_closed')->default(false);
-            $table->foreign('author')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('client')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('manager')->references('id')->on('users');
             $table->timestamps();
         });
