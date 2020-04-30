@@ -17,7 +17,7 @@ class TicketController extends Controller
         $user = $request->user();
 
         if ($user->isManager()) {
-            $tickets = TicketService::getTickets($request->all());
+            $tickets = TicketService::getTickets($request->all(), $user);
 
             return view('manager.tickets.index', compact('tickets'));
         } else {
@@ -31,12 +31,14 @@ class TicketController extends Controller
     {
         $user = $request->user();
 
+        TicketService::addTicketToViewingHistory($ticket, $user);
+
         $ticket->load(['messages' => function($q) {
             $q->orderBy('created_at', 'asc');
         }, 'messages.attachments', 'manager']);
 
         if ($user->isManager()) {
-            dd('hi, manager!');
+            return view('manager.tickets.show', compact('ticket'));
         } else {
             return view('tickets.show', compact('ticket'));
         }
@@ -74,5 +76,16 @@ class TicketController extends Controller
         $ticket->close();
 
         return back();
+    }
+
+    public function assign(Request $request, Ticket $ticket)
+    {
+        try {
+            TicketService::assignTicket($ticket, $request->user());
+
+            return back();
+        } catch (Exception $e) {
+            return back()->withErrors(['assign_error' => $e->getMessage()]);
+        }
     }
 }

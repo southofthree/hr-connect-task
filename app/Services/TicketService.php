@@ -6,6 +6,7 @@ use DB;
 use Exception;
 use App\User;
 use App\Ticket;
+use App\TicketsViewingHistory;
 use Illuminate\Database\Eloquent\Collection;
 
 class TicketService
@@ -41,6 +42,10 @@ class TicketService
 
             $isFromManager = $user->isManager() && $user->id === $ticket->manager_id;
 
+            if ($isFromManager && !$ticket->assignedTo($user->id)) {
+                throw new LogicalException('User is not assigned to the ticket');
+            }
+
             $message = $ticket->messages()->create([
                 'text' => $data['message'],
                 'is_from_manager' => $isFromManager
@@ -75,7 +80,7 @@ class TicketService
             ->get();
     }
 
-    public static function getTickets(array $filters): Collection
+    public static function getTickets(array $filters, User $user): Collection
     {
         $tickets = Ticket::selectRaw("
                     id,
@@ -85,26 +90,41 @@ class TicketService
                 ")
                 ->orderBy('updated_at', 'desc');
 
-        $i = 0;
-
         foreach ($filters as $key => $value) {
-            $query = self::getFilterQuery($key, $value);
+            $query = self::getFilterQuery($key, $value, $user);
 
             if (!$query) continue;
 
-            if ($i === 0) {
-                $tickets->whereRaw($query);
-            } else {
-                $tickets->orWhereRaw($query);
-            }
-
-            $i++;
+            $tickets->whereRaw($query);
         }
 
         return $tickets->get();
     }
 
-    private static function getFilterQuery(string $key, $value): ?string
+    public static function addTicketToViewingHistory(Ticket $ticket, User $user)
+    {
+        TicketsViewingHistory::updateOrCreate([
+            'user_id' => $user->id,
+            'ticket_id' => $ticket->id
+        ], [
+            'updated_at' => now()
+        ]);
+    }
+
+    public static function assignTicket(Ticket $ticket, User $user)
+    {
+        if (!$user->isManager()) {
+            throw new LogicException('User must be a manager');
+        }
+
+        if ($ticket->manager_id) {
+            throw new Exception('Ticket has already assigned to another manager');
+        }
+
+        $ticket->update(['manager_id' => $user->id]);
+    }
+
+    private static function getFilterQuery(string $key, $value, User $user): ?string
     {
         switch ($key) {
             case 'closed':
@@ -120,6 +140,13 @@ class TicketService
                     order by created_at desc
                     limit 1
                 ) = " . ($key === 'responded' ? 'true' : 'false');
+            case 'viewed';
+            case 'not-viewed';
+                return "tickets.id " . ($key === 'not-viewed' ? 'not ': '') . "in (
+                    select ticket_id
+                    from manager_viewing_history
+                    where manager = $user->id
+                )";
         }
 
         return null;

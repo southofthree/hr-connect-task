@@ -25,6 +25,12 @@ Route::middleware('auth')->group(function() {
         });
     });
 
+    Route::middleware('manager')->group(function() {
+        Route::prefix('tickets')->group(function() {
+            Route::post('{ticket}/assign', 'TicketController@assign')->name('tickets.assign');
+        });
+    });
+
     Route::prefix('tickets')->group(function() {
         Route::get('{ticket}', 'TicketController@show')->name('tickets.show');
         Route::post('{ticket}/close', 'TicketController@close')->name('tickets.close');

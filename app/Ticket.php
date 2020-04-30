@@ -19,6 +19,11 @@ class Ticket extends Model
         $this->save();
     }
 
+    public function assignedTo(int $userId)
+    {
+        return $this->manager_id === $userId;
+    }
+
     public function belongsToUser(int $userId): bool
     {
         return $userId === $this->client_id || $userId === $this->manager_id;
@@ -32,5 +37,10 @@ class Ticket extends Model
     public function manager()
     {
         return $this->belongsTo('App\User', 'manager_id');
+    }
+
+    public function client()
+    {
+        return $this->belongsTo('App\User', 'client_id');
     }
 }

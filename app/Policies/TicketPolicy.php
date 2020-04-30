@@ -43,7 +43,7 @@ class TicketPolicy
                 $isLastMessageFromManager = $lastMessage->is_from_manager;
 
                 return $isLastMessageFromManager;
-            } else if ($user->isManager()) {
+            } else if ($user->isManager() && $ticket->assignedTo($user->id)) {
                 return true;
             }
         }
