@@ -4,6 +4,7 @@ namespace App\Services;
 
 use DB;
 use Exception;
+use LogicalException;
 use App\User;
 use App\Ticket;
 use App\TicketsViewingHistory;
@@ -11,18 +12,17 @@ use Illuminate\Database\Eloquent\Collection;
 
 class TicketService
 {
-    public static function create(User $client, array $data): Ticket
+    public static function createTicket(User $client, array $data): Ticket
     {
         try {
             DB::beginTransaction();
 
             $ticket = $client->ticketsAsClient()->create($data);
-            $message = $ticket->messages()->create(['text' => $data['message']]);
-            
-            if (isset($data['attachment'])) {
-                $filename =  str_replace('public/', '', $data['attachment']->store('public'));
 
-                $message->attachments()->create(['filename' => $filename]);
+            $message = $ticket->messages()->create(['text' => $data['message']]);
+
+            if (isset($data['attachment'])) {
+                $message->attachFile($data['attachment']);
             }
 
             DB::commit();
@@ -40,7 +40,7 @@ class TicketService
         try {
             DB::beginTransaction();
 
-            $isFromManager = $user->isManager() && $user->id === $ticket->manager_id;
+            $isFromManager = $user->isManager();
 
             if ($isFromManager && !$ticket->assignedTo($user->id)) {
                 throw new LogicalException('User is not assigned to the ticket');
@@ -52,9 +52,7 @@ class TicketService
             ]);
             
             if (isset($data['attachment'])) {
-                $filename =  str_replace('public/', '', $data['attachment']->store('public'));
-
-                $message->attachments()->create(['filename' => $filename]);
+                $message->attachFile($data['attachment']);
             }
 
             $ticket->touch();
@@ -70,14 +68,14 @@ class TicketService
     public static function getClientTickets(User $user): Collection
     {
         return $user->ticketsAsClient()
-            ->selectRaw("
-                id,
-                subject,
-                is_closed,
-                (select text from messages where ticket_id = tickets.id order by created_at asc limit 1) message
-            ")
-            ->orderBy('updated_at', 'desc')
-            ->get();
+                    ->selectRaw("
+                        id,
+                        subject,
+                        is_closed,
+                        (select text from messages where ticket_id = tickets.id order by created_at asc limit 1) message
+                    ")
+                    ->orderBy('updated_at', 'desc')
+                    ->get();
     }
 
     public static function getTickets(array $filters, User $user): Collection
@@ -144,8 +142,8 @@ class TicketService
             case 'not-viewed';
                 return "tickets.id " . ($key === 'not-viewed' ? 'not ': '') . "in (
                     select ticket_id
-                    from manager_viewing_history
-                    where manager = $user->id
+                    from tickets_viewing_history
+                    where user_id = $user->id
                 )";
         }
 

@@ -3,6 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\UploadedFile;
 
 class Message extends Model
 {
@@ -10,6 +11,13 @@ class Message extends Model
         'text',
         'is_from_manager'
     ];
+
+    public function attachFile(UploadedFile $file)
+    {
+        $this->attachments()->create([
+            'filename' => str_replace('public/', '', $file->store('public'))
+        ]);
+    }
 
     public function attachments()
     {

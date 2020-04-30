@@ -18,13 +18,15 @@ class TicketController extends Controller
 
         if ($user->isManager()) {
             $tickets = TicketService::getTickets($request->all(), $user);
-
-            return view('manager.tickets.index', compact('tickets'));
+            
+            $view = 'manager.tickets.index';
         } else {
             $tickets = TicketService::getClientTickets($user);
 
-            return view('tickets.index', compact('tickets'));
+            $view = 'tickets.index';
         }
+
+        return view($view, compact('tickets'));
     }
 
     public function show(Request $request, Ticket $ticket)
@@ -37,11 +39,9 @@ class TicketController extends Controller
             $q->orderBy('created_at', 'asc');
         }, 'messages.attachments', 'manager']);
 
-        if ($user->isManager()) {
-            return view('manager.tickets.show', compact('ticket'));
-        } else {
-            return view('tickets.show', compact('ticket'));
-        }
+        $view = $user->isManager() ? 'manager.tickets.show' : 'tickets.show';
+
+        return view($view, compact('ticket'));
     }
 
     public function add()
@@ -52,7 +52,7 @@ class TicketController extends Controller
     public function store(StoreRequest $request)
     {
         try {
-            TicketService::create($request->user(), $request->validated());
+            TicketService::createTicket($request->user(), $request->validated());
 
             return redirect()->route('home');
         } catch (Exception $e) {

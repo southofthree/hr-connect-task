@@ -25,11 +25,12 @@ class TicketPolicy
     {
         $lastTicket = $user->ticketsAsClient()->orderBy('created_at', 'desc')->first();
 
-        $now = Carbon::now();
+        if (!$lastTicket) return true;
 
-        if (!$lastTicket || $now->diffInMinutes($lastTicket->created_at) > (60 * 24)) {
-            return true;
-        }
+        $now = Carbon::now();
+        $twentyFourHoursPast = $now->diffInMinutes($lastTicket->created_at) > (60 * 24);
+
+        if ($twentyFourHoursPast) return true;
 
         return false;
     }
