@@ -74,4 +74,54 @@ class TicketService
             ->orderBy('updated_at', 'desc')
             ->get();
     }
+
+    public static function getTickets(array $filters): Collection
+    {
+        $tickets = Ticket::selectRaw("
+                    id,
+                    subject,
+                    is_closed,
+                    (select text from messages where ticket_id = tickets.id order by created_at asc limit 1) message
+                ")
+                ->orderBy('updated_at', 'desc');
+
+        $i = 0;
+
+        foreach ($filters as $key => $value) {
+            $query = self::getFilterQuery($key, $value);
+
+            if (!$query) continue;
+
+            if ($i === 0) {
+                $tickets->whereRaw($query);
+            } else {
+                $tickets->orWhereRaw($query);
+            }
+
+            $i++;
+        }
+
+        return $tickets->get();
+    }
+
+    private static function getFilterQuery(string $key, $value): ?string
+    {
+        switch ($key) {
+            case 'closed':
+                return 'is_closed = true';
+            case 'not-closed':
+                return 'is_closed = false';
+            case 'responded':
+            case 'not-responded':
+                return "(
+                    select is_from_manager
+                    from messages
+                    where ticket_id = tickets.id
+                    order by created_at desc
+                    limit 1
+                ) = " . ($key === 'responded' ? 'true' : 'false');
+        }
+
+        return null;
+    }
 }
