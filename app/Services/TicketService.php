@@ -10,6 +10,7 @@ use App\Ticket;
 use App\TicketsViewingHistory;
 use Illuminate\Database\Eloquent\Collection;
 use App\Events\TicketCreated;
+use App\Events\ResponseCreated;
 
 class TicketService
 {
@@ -23,12 +24,12 @@ class TicketService
             $message = $ticket->messages()->create(['text' => $data['message']]);
 
             if (isset($data['attachment'])) {
-                $message->attachFile($data['attachment']);
+                $attachment = $message->attachFile($data['attachment']);
             }
 
             DB::commit();
 
-            event(new TicketCreated($ticket, $message));
+            event(new TicketCreated($ticket, $message, isset($attachment) ? $attachment : null));
 
             return $ticket;
         } catch (Exception $e) {
@@ -55,12 +56,14 @@ class TicketService
             ]);
             
             if (isset($data['attachment'])) {
-                $message->attachFile($data['attachment']);
+                $attachment = $message->attachFile($data['attachment']);
             }
 
             $ticket->touch();
 
             DB::commit();
+
+            event(new ResponseCreated($ticket, $message, isset($attachment) ? $attachment : null));
         } catch (Exception $e) {
             DB::rollback();
 

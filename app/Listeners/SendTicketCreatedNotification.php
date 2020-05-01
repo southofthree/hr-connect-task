@@ -30,8 +30,9 @@ class SendTicketCreatedNotification
     {
         $ticket = $event->ticket;
         $message = $event->message;
+        $attachment = $event->attachment;
 
-        dispatch(function() use($ticket, $message) {
+        dispatch(function() use($ticket, $message, $attachment) {
             $subject = 'Новая заявка';
 
             $text = 'Тема: ' . $ticket->subject
@@ -40,11 +41,20 @@ class SendTicketCreatedNotification
                     . '<br><br>'
                     . $message->text;
 
-            User::managers()->chunk(1000, function($managers) use($subject, $text) {
+            if ($attachment) {
+                $attachment = [
+                    'disk' => 'public',
+                    'path' => $attachment->filename
+                ];
+            } else {
+                $attachment = null;
+            }
+
+            User::managers()->chunk(1000, function($managers) use($subject, $text, $attachment) {
                 foreach ($managers as $manager) {
                     $to = $manager->email;
     
-                    Mail::to($to)->queue(new SimpleMail($subject, $text));
+                    Mail::to($to)->queue(new SimpleMail($subject, $text, $attachment));
                 }
             });
         });

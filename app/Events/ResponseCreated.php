@@ -13,7 +13,7 @@ use App\Ticket;
 use App\Message;
 use App\MessageAttachment;
 
-class TicketCreated
+class ResponseCreated
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 

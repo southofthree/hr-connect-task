@@ -14,7 +14,7 @@ class Message extends Model
 
     public function attachFile(UploadedFile $file)
     {
-        $this->attachments()->create([
+        return $this->attachments()->create([
             'filename' => str_replace('public/', '', $file->store('public'))
         ]);
     }

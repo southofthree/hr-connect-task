@@ -3,6 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Events\TicketClosed;
 
 class Ticket extends Model
 {
@@ -17,6 +18,8 @@ class Ticket extends Model
         $this->is_closed = true;
 
         $this->save();
+
+        event(new TicketClosed($this));
     }
 
     public function assignedTo(int $userId)

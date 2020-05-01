@@ -10,27 +10,21 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use App\Ticket;
-use App\Message;
-use App\MessageAttachment;
 
-class TicketCreated
+class TicketClosed
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $ticket;
-    public $message;
-    public $attachment;
 
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct(Ticket $ticket, Message $message, ?MessageAttachment $attachment)
+    public function __construct(Ticket $ticket)
     {
         $this->ticket = $ticket;
-        $this->message = $message;
-        $this->attachment = $attachment;
     }
 
     /**

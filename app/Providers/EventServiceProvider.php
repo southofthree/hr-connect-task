@@ -6,6 +6,10 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use App\Events\TicketCreated;
 use App\Listeners\SendTicketCreatedNotification;
+use App\Events\TicketClosed;
+use App\Listeners\SendTicketClosedNotification;
+use App\Events\ResponseCreated;
+use App\Listeners\SendResponseCreatedNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Event;
 
@@ -22,6 +26,12 @@ class EventServiceProvider extends ServiceProvider
         ],
         TicketCreated::class => [
             SendTicketCreatedNotification::class
+        ],
+        TicketClosed::class => [
+            SendTicketClosedNotification::class
+        ],
+        ResponseCreated::class => [
+            SendResponseCreatedNotification::class
         ],
     ];
 
