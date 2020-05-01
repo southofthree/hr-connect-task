@@ -17,6 +17,11 @@ class User extends Authenticatable
         'password', 'remember_token',
     ];
 
+    public function scopeManagers($q)
+    {
+        return $q->whereRole('manager');
+    }
+
     public function isManager()
     {
         return $this->role === 'manager';

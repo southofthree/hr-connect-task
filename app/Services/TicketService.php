@@ -9,6 +9,7 @@ use App\User;
 use App\Ticket;
 use App\TicketsViewingHistory;
 use Illuminate\Database\Eloquent\Collection;
+use App\Events\TicketCreated;
 
 class TicketService
 {
@@ -26,6 +27,8 @@ class TicketService
             }
 
             DB::commit();
+
+            event(new TicketCreated($ticket, $message));
 
             return $ticket;
         } catch (Exception $e) {
