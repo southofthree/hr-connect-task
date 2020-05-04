@@ -11,6 +11,7 @@ use App\TicketsViewingHistory;
 use Illuminate\Database\Eloquent\Collection;
 use App\Events\TicketCreated;
 use App\Events\ResponseCreated;
+use Illuminate\Pagination\Paginator;
 
 class TicketService
 {
@@ -71,8 +72,10 @@ class TicketService
         }
     }
 
-    public static function getClientTickets(User $user): Collection
+    public static function getClientTickets(User $user): Paginator
     {
+        $pageSize = 5;
+
         return $user->ticketsAsClient()
                     ->selectRaw("
                         id,
@@ -81,11 +84,13 @@ class TicketService
                         (select text from messages where ticket_id = tickets.id order by created_at asc limit 1) message
                     ")
                     ->orderBy('updated_at', 'desc')
-                    ->get();
+                    ->simplePaginate($pageSize);
     }
 
-    public static function getTickets(array $filters, User $user): Collection
+    public static function getTickets(array $filters, User $user): Paginator
     {
+        $pageSize = 15;
+
         $tickets = Ticket::selectRaw("
                     id,
                     subject,
@@ -102,7 +107,7 @@ class TicketService
             $tickets->whereRaw($query);
         }
 
-        return $tickets->get();
+        return $tickets->simplePaginate($pageSize);
     }
 
     public static function addTicketToViewingHistory(Ticket $ticket, User $user)

@@ -78,4 +78,6 @@
             @endforeach
         </tbody>
     </table>
+
+    {{ $tickets->appends(request()->query())->links() }}
 @endsection

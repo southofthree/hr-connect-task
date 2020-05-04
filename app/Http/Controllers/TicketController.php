@@ -18,7 +18,7 @@ class TicketController extends Controller
 
         if ($user->isManager()) {
             $tickets = TicketService::getTickets($request->all(), $user);
-            
+
             $view = 'manager.tickets.index';
         } else {
             $tickets = TicketService::getClientTickets($user);
