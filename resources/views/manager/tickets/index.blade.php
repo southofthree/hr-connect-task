@@ -60,17 +60,27 @@
         </thead>
         <tbody>
             @foreach ($tickets as $ticket)
-                <tr>
-                    <th>
+                @if ($ticket->last_viewed_at === null
+                    || $ticket->last_viewed_at <= $ticket->client_last_message_created_at)
+                    <tr style="background-color: #F1F8E9">
+                @else
+                    <tr>
+                @endif
+                    <td>
                         <strong>
                             <a href="{{ route('tickets.show', $ticket) }}">
                                 {{ $ticket->subject }}
                             </a>
                             <p>
-                                {{ $ticket->message }}
+                                {{ $ticket->client_first_message }}
                             </p>
+                            @if ($ticket->client_last_message_text != $ticket->client_first_message)
+                                <div class="alert alert-info">
+                                    {{ $ticket->client_last_message_text }}
+                                </div>
+                            @endif
                         </strong>
-                    </th>
+                    </td>
                     <td>
                         {!! $ticket->is_closed ? '✔ Закрыта' : '<span style="color: green">Открыта</span>' !!}
                     </td>

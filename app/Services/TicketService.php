@@ -78,12 +78,42 @@ class TicketService
 
         return $user->ticketsAsClient()
                     ->selectRaw("
-                        id,
+                        tickets.id,
                         subject,
                         is_closed,
-                        (select text from messages where ticket_id = tickets.id order by created_at asc limit 1) message
+                        (
+                            select text
+                            from messages
+                            where ticket_id = tickets.id
+                            order by created_at asc
+                            limit 1
+                        ) client_first_message,
+                        messages.text manager_last_message_text,
+                        messages.created_at manager_last_message_created_at,
+                        (
+                            select updated_at
+                            from tickets_viewing_history
+                            where
+                                ticket_id = tickets.id and
+                                user_id = tickets.client_id
+                        ) last_viewed_at
                     ")
-                    ->orderBy('updated_at', 'desc')
+                    ->leftJoin('messages', function($join) {
+                        $join->on(
+                            'messages.id',
+                            '=',
+                            DB::raw("(
+                                select id
+                                from messages
+                                where
+                                    ticket_id = tickets.id and
+                                    is_from_manager
+                                order by created_at desc
+                                limit 1
+                            )")
+                        );
+                    })
+                    ->orderBy('tickets.updated_at', 'desc')
                     ->simplePaginate($pageSize);
     }
 
@@ -92,12 +122,42 @@ class TicketService
         $pageSize = 15;
 
         $tickets = Ticket::selectRaw("
-                    id,
+                    tickets.id,
                     subject,
                     is_closed,
-                    (select text from messages where ticket_id = tickets.id order by created_at asc limit 1) message
+                    (
+                        select text
+                        from messages
+                        where ticket_id = tickets.id
+                        order by created_at asc
+                        limit 1
+                    ) client_first_message,
+                    messages.text client_last_message_text,
+                    messages.created_at client_last_message_created_at,
+                    (
+                        select updated_at
+                        from tickets_viewing_history
+                        where
+                            ticket_id = tickets.id and
+                            user_id = tickets.manager_id
+                    ) last_viewed_at
                 ")
-                ->orderBy('updated_at', 'desc');
+                ->leftJoin('messages', function($join) {
+                    $join->on(
+                        'messages.id',
+                        '=',
+                        DB::raw("(
+                            select id
+                            from messages
+                            where
+                                ticket_id = tickets.id and
+                                !is_from_manager
+                            order by created_at desc
+                            limit 1
+                        )")
+                    );
+                })
+                ->orderBy('tickets.updated_at', 'desc');
 
         foreach ($filters as $key => $value) {
             $query = self::getFilterQuery($key, $value, $user);
