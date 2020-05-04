@@ -8,5 +8,6 @@
     "Confirm Password": "Подтверждение пароля",
     "Reset Password": "Сброс пароля",
     "Send Password Reset Link": "Отправить",
-    "Logout": "Выйти"
+    "Logout": "Выйти",
+    "Name": "Имя"
 }
