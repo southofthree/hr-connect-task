@@ -22,9 +22,14 @@ class Ticket extends Model
         event(new TicketClosed($this));
     }
 
-    public function assignedTo(int $userId)
+    public function assignedTo(int $userId): bool
     {
         return $this->manager_id === $userId;
+    }
+
+    public function isOwner(int $userId): bool
+    {
+        return $this->client_id === $userId;
     }
 
     public function belongsToUser(int $userId): bool

@@ -21,6 +21,11 @@ class TicketPolicy
         //
     }
 
+    public function view(User $user, Ticket $ticket)
+    {
+        return $user->isManager() || $ticket->isOwner($user->id);
+    }
+
     public function create(User $user)
     {
         $lastTicket = $user->ticketsAsClient()->orderBy('created_at', 'desc')->first();

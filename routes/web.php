@@ -33,7 +33,7 @@ Route::middleware('auth')->group(function() {
     });
 
     Route::prefix('tickets')->group(function() {
-        Route::get('{ticket}', 'TicketController@show')->name('tickets.show');
+        Route::middleware('can:view,ticket')->get('{ticket}', 'TicketController@show')->name('tickets.show');
         Route::middleware('can:respond,ticket')->post('{ticket}', 'TicketController@respond')->name('tickets.respond');
     });
 });
