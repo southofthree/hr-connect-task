@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Route;
 
 Auth::routes();
 
+Route::get('check', 'TicketController@check')->name('check');
+
 Route::middleware('auth')->group(function() {
     Route::get('', 'TicketController@index')->name('home');
 

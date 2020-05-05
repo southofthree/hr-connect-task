@@ -23,6 +23,7 @@ class TicketPolicy
 
     public function create(User $user)
     {
+        return true;
         $lastTicket = $user->ticketsAsClient()->orderBy('created_at', 'desc')->first();
 
         if (!$lastTicket) return true;

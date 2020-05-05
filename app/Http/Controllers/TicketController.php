@@ -88,4 +88,9 @@ class TicketController extends Controller
             return back()->withErrors(['assign_error' => $e->getMessage()]);
         }
     }
+
+    public function check(Request $request)
+    {
+        return TicketService::checkTicketByUrl($request);
+    }
 }

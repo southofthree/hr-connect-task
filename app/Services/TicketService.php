@@ -12,6 +12,9 @@ use Illuminate\Database\Eloquent\Collection;
 use App\Events\TicketCreated;
 use App\Events\ResponseCreated;
 use Illuminate\Pagination\Paginator;
+use Auth;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 class TicketService
 {
@@ -219,5 +222,31 @@ class TicketService
         }
 
         return null;
+    }
+
+    public static function checkTicketByUrl(Request $request): RedirectResponse
+    {
+        if (!$request->hasValidSignature() || !$request->has('user') || !$request->has('ticket')) {
+            abort(401);
+        }
+
+        $userId = $request->user;
+        $ticketId = $request->ticket;
+
+        $authorized = Auth::check();
+
+        if ($authorized) {
+            $user = Auth::user();
+        } else {
+            $user = User::findOrFail($userId);
+        }
+
+        if (!$user->isManager()) abort(403);
+
+        if (!$authorized) Auth::login($user);
+
+        $ticket = Ticket::findOrFail($ticketId);
+
+        return redirect()->route('tickets.show', $ticket);
     }
 }

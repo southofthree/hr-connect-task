@@ -7,6 +7,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use App\Mail\SimpleMail;
 use Mail;
 use App\User;
+use Illuminate\Support\Facades\URL;
 
 class SendResponseCreatedNotification
 {
@@ -57,9 +58,15 @@ class SendResponseCreatedNotification
 
                 $to = $manager->email;
 
+                $link = URL::signedRoute('check', [
+                    'user' => $manager->id,
+                    'ticket' => $ticket->id
+                ]);
+
                 $text = 'Пользователь оставил новое сообщение по заявке «' . $ticket->subject . '»:'
                         . '<br><br>'
-                        . $message->text;
+                        . $message->text
+                        . "<br><br><a href=\"$link\">Перейти к заявке</a>";
             }
 
             Mail::to($to)->queue(new SimpleMail($subject, $text, $attachment));
