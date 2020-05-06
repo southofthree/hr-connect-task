@@ -24,7 +24,7 @@ Route::middleware('auth')->group(function() {
         Route::prefix('tickets')->group(function() {
             Route::get('add', 'TicketController@add')->name('tickets.add');
             Route::middleware('can:create,App\Ticket')->post('', 'TicketController@store')->name('tickets.store');
-            Route::post('{ticket}/close', 'TicketController@close')->name('tickets.close');
+            Route::middleware('can:close,ticket')->post('{ticket}/close', 'TicketController@close')->name('tickets.close');
         });
     });
 

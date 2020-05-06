@@ -40,6 +40,11 @@ class TicketPolicy
         return false;
     }
 
+    public function close(User $user, Ticket $ticket)
+    {
+        return $ticket->isOwner($user->id);
+    }
+
     public function respond(User $user, Ticket $ticket)
     {
         if (!$ticket->is_closed) {
